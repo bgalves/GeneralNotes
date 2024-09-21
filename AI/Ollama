@@ -1,0 +1,66 @@
+
+Having Access to Ollama LLM's on my LAN:
+
+
+Solution Source : https://github.com/ollama/ollama/issues/1431
+
+
+If anyone is having issues with connecting to open webui on your LAN. How I solved my connectivity issues was from the following:
+
+Background:
+Ollama - running on wsl2 ubuntu
+Open WebUI - running inside a docker container within wsl2 Ubuntu
+
+Edit /etc/systemd/system/ollama.service (I used nano)
+Add (under the service category):
+
+Environment="OLLAMA_HOST=0.0.0.0"
+
+Start Ollama with the command:
+ollama serve
+
+Now create the docker run command for open webui (assuming you already have the docker engine installed.)
+I used this docker run command:
+
+docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://127.0.0.1:11434 --name ollama-webui --restart always ghcr.io/open-webui/open-webui:main
+****
+I used this one on my lan:
+
+sudo docker run -d --network=host --gpus all -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://127.0.0.1:11434 --name ollama-webui --restart always ghcr.io/open-webui/open-webui:cuda
+****
+
+
+If it doesn't work try(this makes sure docker is running):
+sudo service docker start
+
+Next, create an inbound firewall rule on the host machine using windows defender firewall, in my case my server.
+
+Name: ollama-webui
+
+(inbound) TCP allow port:8080
+private network
+Lastly, create a portproxy on the host machine:
+With your wsl 2 instance use the command:
+ifconfig eth0
+
+Note the inet IP address. Mine was something like 172.30.167.24
+
+On the host machine open admin powershell and type in:
+
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=172.30.167.24
+****
+I used these on my lan:
+# powershell
+ netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=172.30.101.16
+ netsh interface portproxy add v4tov4 listenport=11434 listenaddress=0.0.0.0 connectport=11434 connectaddress=172.30.101.16
+
+note: 172.30.101.16 is the wsl2 internal ip address -> 172.30.101.16
+
+Also I added this one netsh interface portproxy add v4tov4 listenport=22 listenaddress=0.0.0.0 connectport=22 connectaddress=172.30.101.16
+to be able to do ssh access to my AI server.
+****
+
+Now you should be able to connect to open webui on any computer on your local network using your hosts device IP:
+ex: 192.168.1.10:8080
+
+Note: This does not allow you to access the webpage outside your network.
