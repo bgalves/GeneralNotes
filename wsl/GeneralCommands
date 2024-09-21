@@ -1,0 +1,19 @@
+Move WSL2 file system to another drive.
+
+Export Ubuntu
+
+mkdir D:\backup
+wsl --export Ubuntu D:\backup\ubuntu.tar
+Unregister the same distribution to remove it from the C: drive:
+
+wsl --unregister Ubuntu
+Import Ubuntu
+
+mkdir D:\wsl
+wsl --import Ubuntu D:\wsl\ D:\backup\ubuntu.tar
+By default Ubuntu will use root as the default user, to switch back to previous user
+
+Go to the Ubuntu App Folder run command to set default user
+
+cd %userprofile%\AppData\Local\Microsoft\WindowsApps
+ubuntu config --default-user <username>
