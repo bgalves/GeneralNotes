@@ -1,0 +1,12 @@
+Run anythingLLM Docker
+
+
+docker run -d -p 3001:3001 \
+--network=host \
+--cap-add SYS_ADMIN \
+--restart always \
+--name anythingllm \
+mintplexlabs/anythingllm
+
+# Em powershell
+ netsh interface portproxy add v4tov4 listenport=3001 listenaddress=0.0.0.0 connectport=3001 connectaddress=172.30.101.16
